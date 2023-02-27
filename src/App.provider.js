@@ -1,7 +1,7 @@
 import { createContext, useEffect, useState } from "react";
 import { getAuth, signInAnonymously, onAuthStateChanged} from 'firebase/auth'
 import { db, getCategories, getProducts, getCart } from "./firebase/firebase";
-import {doc, setDoc, getDoc, onSnapshot} from 'firebase/firestore'
+import {doc, setDoc, addDoc, getDoc, getDocs, collection, query, where} from 'firebase/firestore'
 
 
 
@@ -49,52 +49,77 @@ const AppProvider = ({children}) => {
     }
 
     const addToCart = async (user, product, qty) => {
-        const cartRef = doc(db, 'carts', user)
-        const snap = await getDoc(cartRef)
+        const cartRef = collection(db, 'carts', user, 'pending')
+        const q = query(cartRef, where('checkedOut', '==', false))
+        const snap = await getDocs(q)
         let data = {}
-        if (snap.exists()) {
-            let i = snap.data().products.findIndex((p) => p.id === product)
-            if (i !== -1) {
-                let q = snap.data().products[i].qty
-                let arr = [...snap.data().products]
-                arr[i].qty = q + qty
-                data = {products: arr}
-            } else {
-                data = {products: [...snap.data().products, {id: product, qty: qty}]}
-            }
+        if (!snap.empty) {
+            snap.forEach(async (snap) => {
+                let i = snap.data().products.findIndex((p) => p.id === product)
+                if (i !== -1) {
+                    let q = snap.data().products[i].qty
+                    let arr = [...snap.data().products]
+                    arr[i].qty = q + qty
+                    data = {products: arr}
+                } else {
+                    data = {products: [...snap.data().products, {id: product, qty: qty}]}
+                }
+                await setDoc(doc(db, 'carts', user, 'pending', snap.id), data, {merge: true})
+            })
         } else {
             data = {
                 user: user,
-                products: [...snap.data().products, {id: product, qty: qty}],
+                products: [{id: product, qty: qty}],
                 paid: false,
+                pmtType: null,
+                billing: {
+                    name: '',
+                    email: '',
+                    phone: null,
+                },
+                shipping: {
+                    address: '',
+                    code: '',
+                    city: '',
+                    country: ''
+                },
+                checkedOut: false,
             }
+            console.log(data)
+            await addDoc(collection(db, 'carts', user, 'pending'), data)
         }
-        await setDoc(cartRef, data, {merge: true})
-        const newSnap = await getDoc(cartRef)
-        setCart(newSnap.data())
+        const newSnap = await getDocs(cartRef)
+        newSnap.forEach(snap => {
+            setCart(snap.data())
+        })
     }
 
     const removeFromCart = async (user, product, qty) => {
-        const cartRef = doc(db, 'carts', user)
-        const snap = await getDoc(cartRef)
-        let arr = [...snap.data().products]
-        let data = {}
-        if (qty !== 'all') {
-            let i = snap.data().products.findIndex(p => p.id === product)
-            let q = snap.data().products[i].qty
-            arr[i].qty = q - qty
-            if (arr[i].qty === 0) {
+        const cartRef = collection(db, 'carts', user, 'pending')
+        const q = query(cartRef, where('checkedOut', '==', false))
+        const snap = await getDocs(q)
+        snap.forEach(async(snap) => {
+            let arr = [...snap.data().products]
+            let data = {}
+            if (qty !== 'all') {
+                let i = snap.data().products.findIndex(p => p.id === product)
+                let q = snap.data().products[i].qty
+                arr[i].qty = q - qty
+                if (arr[i].qty === 0) {
+                    arr.splice(i, 1)
+                }
+                data = {products: arr}
+            } if (qty === 'all') {
+                let i = snap.data().products.findIndex(p => p.id === product)
                 arr.splice(i, 1)
+                data = {products: arr}
             }
-            data = {products: arr}
-        } if (qty === 'all') {
-            let i = snap.data().products.findIndex(p => p.id === product)
-            arr.splice(i, 1)
-            data = {products: arr}
-        }
-        await setDoc(cartRef, data, {merge: true})
-        const newSnap = await getDoc(cartRef)
-        setCart(newSnap.data())
+            await setDoc(doc(db, 'carts', user, 'pending', snap.id), data, {merge: true})
+        })
+        const newSnap = await getDocs(cartRef)
+        newSnap.forEach((snap) => {
+            setCart(snap.data())
+        })
     }
 
     useEffect(() => {
