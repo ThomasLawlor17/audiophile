@@ -7,8 +7,7 @@ import { getAuth, signInAnonymously, onAuthStateChanged} from 'firebase/auth'
 
 
 function App() {
-  const {user, products, fetchCart, addToCart, removeFromCart} = useContext(AppContext)
-
+  const {user, products, fetchCart, addToCart, removeFromCart, checkoutCart} = useContext(AppContext)
 
   return (
     <div className="App">
@@ -18,7 +17,6 @@ function App() {
       <Link to='/speakers'>speakers</Link>
       <Link to='/earphones'>earphones</Link>
       <Link to='/checkout'>checkout</Link>
-      <button onClick={() => fetchCart()}>FETCH CART</button>
       {products && products.map((p, i) => (
         <ul key={p.id}>
                 <button onClick={() => addToCart(user, p.id, 1)} >Add to cart</button>

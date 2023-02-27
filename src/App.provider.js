@@ -1,7 +1,7 @@
 import { createContext, useEffect, useState } from "react";
 import { getAuth, signInAnonymously, onAuthStateChanged} from 'firebase/auth'
 import { db, getCategories, getProducts, getCart } from "./firebase/firebase";
-import {doc, setDoc, addDoc, getDoc, getDocs, collection, query, where} from 'firebase/firestore'
+import {doc, setDoc, addDoc, deleteDoc, getDocs, collection, query, where} from 'firebase/firestore'
 
 
 
@@ -13,10 +13,13 @@ export const AppContext = createContext({
     fetchCart: () => {},
     addToCart: () => {},
     removeFromCart: () => {},
+    checkoutCart: () => {},
     categories: [],
     setCategories: () => {},
     products: [],
     setProducts: () => {},
+    checkedOut: false,
+    setCheckedOut: () => {},
 })
 
 
@@ -25,6 +28,7 @@ const AppProvider = ({children}) => {
     const [cart, setCart] = useState({})
     const [categories, setCategories] = useState([])
     const [products, setProducts] = useState([])
+    const [checkedOut, setCheckedOut] = useState(false)
 
     const fetchProducts = async () => {
         let arr = []
@@ -122,6 +126,34 @@ const AppProvider = ({children}) => {
         })
     }
 
+    const checkoutCart = async (user, pmtType, billing, shipping) => {
+        const cartRef = collection(db, 'carts', user, 'pending')
+        const q = query(cartRef, where('checkedOut', '==', false))
+        const snap = await getDocs(q)
+        snap.forEach(async(snap) => {
+            let paid = ''
+            if (pmtType === '1') {
+                paid = true
+            }
+            if (pmtType === '2') {
+                paid = false
+            }
+            let data = {
+                user: user,
+                products: [...snap.data().products],
+                paid: paid,
+                pmtType: pmtType,
+                billing: billing,
+                shipping: shipping,
+                checkedOut: true,
+            }
+            await setDoc(doc(db, 'carts', user, 'complete', snap.id), data)
+            await deleteDoc(doc(db, 'carts', user, 'pending', snap.id))
+            setCheckedOut(true)
+            setCart([])
+        })
+    }
+
     useEffect(() => {
         const auth = getAuth()
         signInAnonymously(auth).then(() => {
@@ -150,10 +182,13 @@ const AppProvider = ({children}) => {
                 fetchCart,
                 addToCart,
                 removeFromCart,
+                checkoutCart,
                 categories,
                 setCategories,
                 products,
                 setProducts,
+                checkedOut,
+                setCheckedOut,
             }}>
                 {children}
             </AppContext.Provider>
