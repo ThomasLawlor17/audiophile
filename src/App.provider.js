@@ -18,7 +18,7 @@ export const AppContext = createContext({
     setCategories: () => {},
     products: [],
     setProducts: () => {},
-    checkedOut: false,
+    checkedOut: '',
     setCheckedOut: () => {},
 })
 
