@@ -4,36 +4,44 @@ import {doc, getDoc} from 'firebase/firestore'
 import { getProducts } from "./firebase/firebase";
 import { AppContext } from "./App.provider";
 import { getAuth, signInAnonymously, onAuthStateChanged} from 'firebase/auth'
+import Nav from "./components/Nav";
+import Footer from "./components/Footer";
 
 
 function App() {
-  const {user, products, fetchCart, addToCart, removeFromCart, checkoutCart} = useContext(AppContext)
+  const {user, categories, products, fetchCart, addToCart, removeFromCart, checkoutCart} = useContext(AppContext)
 
   return (
+    <>
+    <Nav/>
     <div className="App">
-      <div>USER: {user}</div>
-      <Link to='/'>Home</Link>
-      <Link to='/headphones'>headphones</Link>
-      <Link to='/speakers'>speakers</Link>
-      <Link to='/earphones'>earphones</Link>
-      <Link to='/checkout'>checkout</Link>
-      {products && products.map((p, i) => (
-        <ul key={p.id}>
-                <button onClick={() => addToCart(user, p.id, 1)} >Add to cart</button>
-                <button onClick={() => removeFromCart(user, p.id, 1)}>Remove</button>
-                <li>{p.id}</li>
-          <li>{p.name}</li>
-          <li>{p.category}</li>
-          <li>{p.price}</li>
-          <li>{p.includes.map((includes, i) => (
-            <ul key={i}>
-              <li>{includes.item}</li>
-              <li>{includes.quantity}</li>
-            </ul>
-          ))}</li>
-        </ul>
-      ))}
+      <div className="hero">
+        <Link to='/headphones/4'>SEE PRODUCT</Link>
+      </div>
+      <div className="categories">
+        {categories.map((c, i) => (
+          <div>
+            <Link to={`/${c}`} key={i}>{c}</Link>
+          </div>
+        ))}
+      </div>
+      <div className="products">
+        <div>
+          <Link to='/speakers/6'>SEE PRODUCT</Link>
+        </div>
+        <div>
+          <Link to='/speakers/5'>SEE PRODUCT</Link>
+        </div>
+        <div>
+          <Link to='/earphones/1'>SEE PRODUCT</Link>
+        </div>
+      </div>
+      <div className="info">
+      </div>
     </div>
+    <Footer/>
+    </>
+      
   );
 }
 

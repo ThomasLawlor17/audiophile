@@ -2,6 +2,7 @@ import { createContext, useEffect, useState } from "react";
 import { getAuth, signInAnonymously, onAuthStateChanged} from 'firebase/auth'
 import { db, getCategories, getProducts, getCart } from "./firebase/firebase";
 import {doc, setDoc, addDoc, deleteDoc, getDocs, collection, query, where} from 'firebase/firestore'
+import { useLocation } from "react-router";
 
 
 
