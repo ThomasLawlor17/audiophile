@@ -1,4 +1,5 @@
 import CartIcon from "./Cart"
+import DeliveryIcon from "./Delivery"
 import FacebookIcon from "./Facebook"
 import HamburgerIcon from "./Hamburger"
 import InstagramIcon from "./Instagram"
@@ -16,6 +17,8 @@ const Icon = ({name}) => {
             return <TwitterIcon/>
         case 'instagram':
             return <InstagramIcon/>
+        case 'cod':
+            return <DeliveryIcon/>
     default:
         return null
     }

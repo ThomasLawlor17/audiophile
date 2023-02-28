@@ -10,7 +10,7 @@ const Nav = () => {
         <div className="hb">
             <Icon name='hb'/>
         </div>
-        <h1>audiophile</h1>
+        <Link to='/'><h1>audiophile</h1></Link>
         <div className="links">
             <Link to='/'>HOME</Link>
             {categories.map((c, i) => <Link to={`/${c}`} key={i}>{c}</Link>)}

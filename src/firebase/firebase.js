@@ -1,5 +1,5 @@
 import {initializeApp} from 'firebase/app'
-import {getFirestore, setDoc, doc, getDoc, getDocs, collection} from 'firebase/firestore'
+import {getFirestore, getDocs, collection, query, where} from 'firebase/firestore'
 
 const firebaseConfig = {
     apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
@@ -28,8 +28,13 @@ export const getCategories = async() => {
 }
 
 export const getCart = async(user) => {
-    const cartRef = doc(db, 'carts', user)
-    const cartSnap = await getDoc(cartRef)
+    const cartRef = collection(db, 'carts', user, 'pending')
+    const q = query(cartRef, where('checkedOut', '==', false))
+    const snap = await getDocs(q)
+    let cartSnap = ''
+    snap.forEach((snap) => {
+        cartSnap = snap.data()
+    })
     return cartSnap
 }
 
