@@ -6,6 +6,8 @@ import { AppContext } from "./App.provider";
 import { getAuth, signInAnonymously, onAuthStateChanged} from 'firebase/auth'
 import Nav from "./components/Nav";
 import Footer from "./components/Footer";
+import Info from "./components/Info";
+import Categories from "./components/Categories";
 
 
 function App() {
@@ -18,13 +20,7 @@ function App() {
       <div className="hero">
         <Link to='/headphones/4'>SEE PRODUCT</Link>
       </div>
-      <div className="categories">
-        {categories.map((c, i) => (
-          <div>
-            <Link to={`/${c}`} key={i}>{c}</Link>
-          </div>
-        ))}
-      </div>
+      <Categories/>
       <div className="products">
         <div>
           <Link to='/speakers/6'>SEE PRODUCT</Link>
@@ -36,8 +32,7 @@ function App() {
           <Link to='/earphones/1'>SEE PRODUCT</Link>
         </div>
       </div>
-      <div className="info">
-      </div>
+      <Info/>
     </div>
     <Footer/>
     </>

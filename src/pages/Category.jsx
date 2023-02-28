@@ -1,43 +1,55 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { AppContext } from "../App.provider";
+import Categories from "../components/Categories";
+import Footer from "../components/Footer";
+import Info from "../components/Info";
+import Nav from "../components/Nav";
 
 const CategoryPage = () => {
-
+  const {categories, products} = useContext(AppContext)
   const location = useLocation()
 
-  const [content] = useState([
-    {name: 'Headphones', products: [1, 2, 3]},
-    {name: 'Speakers', products: [1, 2, 3]},
-    {name: 'Earphones', products: [1, 2, 3]},
-  ])
+  const [activeCat, setActiveCat] = useState()
+  const [activeProducts, setActiveProducts] = useState([])
 
-  const [category, setCategory] = useState()
+
+  const filterProducts = (cat) => {
+    let arr = []
+    products.forEach((p) => {
+      if (p.category === location.pathname.substring(1)) {
+        arr.push(p)
+      }
+    })
+    setActiveProducts(arr)
+  }
 
   useEffect(() => {
-  if (location.pathname === '/headphones') {
-    setCategory(content[0])
-  }
-  if (location.pathname === '/speakers') {
-    setCategory(content[1])
-  }
-  if (location.pathname === '/earphones') {
-    setCategory(content[2])
-  }
-  }, [location, content])
+    setActiveCat(location.pathname.substring(1))
+    filterProducts(location.pathname)
+    console.log(activeProducts)
+  }, [location])
+
+
 
 	return (
-		<div location={location}>
-      <h1>{category ? category.name : ''}</h1>
-			<Link to="/">Home</Link>
-			<Link to="/headphones">headphones</Link>
-			<Link to="/speakers">speakers</Link>
-			<Link to="/earphones">earphones</Link>
-			<Link to="/checkout">checkout</Link>
-
-      {category ? category.products.map((p, i) => (
-        <Link to={`${location.pathname}/${p}`} key={i}>Product {p}</Link>
-      )) : ''}
+    <>
+    <Nav/>
+		<div>
+      <h1>{activeCat}</h1>
+      <div className="products">
+        {activeProducts ? activeProducts.map((p, i) => (
+          <div key={i} className={`product-item ${p.slug}-item`}>
+            <Link to={`/${activeCat}/${p.id}`}>SEE PRODUCT</Link>
+          </div>
+        )): ''}
+      </div>
+      <Categories/>
+      <Info/>
 		</div>
+    <Footer/>
+    </>
+
 	);
 };
 

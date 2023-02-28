@@ -12,7 +12,7 @@ const Footer = () => {
             <h2>audiophile</h2>
             <div className="links">
                 <Link to='/'>HOME</Link>
-                {categories.map((c, i) => (<Link to={`/${c}`} key={i}>{c}</Link>))}
+                {categories.map((c, i) => (<Link to={`/${c}`} key={i + 100}>{c}</Link>))}
             </div>
         </div>
         <div className="middle">
