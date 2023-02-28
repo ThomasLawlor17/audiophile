@@ -2,6 +2,7 @@ import { createContext, useEffect, useState } from "react";
 import { getAuth, signInAnonymously, onAuthStateChanged} from 'firebase/auth'
 import { db, getCategories, getProducts, getCart } from "./firebase/firebase";
 import {doc, setDoc, addDoc, deleteDoc, getDocs, collection, query, where} from 'firebase/firestore'
+import { useLocation } from "react-router";
 
 
 
@@ -47,12 +48,19 @@ const AppProvider = ({children}) => {
         setCategories(arr)
     }
 
-    const fetchCart = async () => {
-        let data = await getCart(user)
-        setCart(data.data())
+    const fetchCart = async (id) => {
+        let data = await getCart(id)
+        setCart(data.products)
     }
 
     const addToCart = async (user, product, qty) => {
+        const productRef = collection(db, 'products')
+        const productQ = query(productRef, where('id', '==', product))
+        const p = await getDocs(productQ)
+        let price = ''
+        p.forEach(p => {
+            price = p.data().price
+        })
         const cartRef = collection(db, 'carts', user, 'pending')
         const q = query(cartRef, where('checkedOut', '==', false))
         const snap = await getDocs(q)
@@ -66,16 +74,24 @@ const AppProvider = ({children}) => {
                     arr[i].qty = q + qty
                     data = {products: arr}
                 } else {
-                    data = {products: [...snap.data().products, {id: product, qty: qty}]}
+                    data = {products: [...snap.data().products, {id: product, qty: qty, price: price}]}
                 }
                 await setDoc(doc(db, 'carts', user, 'pending', snap.id), data, {merge: true})
             })
         } else {
             data = {
                 user: user,
-                products: [{id: product, qty: qty}],
+                products: [{id: product, qty: qty, price: price}],
+                subtotal: '',
+                shipping: '',
+                tax: '',
+                total: '',
                 paid: false,
-                pmtType: null,
+                payment: {
+                    pmtType: null,
+                    emNo: '',
+                    emPin: '',
+                },
                 billing: {
                     name: '',
                     email: '',
@@ -89,12 +105,11 @@ const AppProvider = ({children}) => {
                 },
                 checkedOut: false,
             }
-            console.log(data)
             await addDoc(collection(db, 'carts', user, 'pending'), data)
         }
         const newSnap = await getDocs(cartRef)
         newSnap.forEach(snap => {
-            setCart(snap.data())
+            setCart(snap.data().products)
         })
     }
 
@@ -122,27 +137,32 @@ const AppProvider = ({children}) => {
         })
         const newSnap = await getDocs(cartRef)
         newSnap.forEach((snap) => {
-            setCart(snap.data())
+            setCart(snap.data().products)
         })
     }
 
-    const checkoutCart = async (user, pmtType, billing, shipping) => {
+    const checkoutCart = async (user, payment, billing, shipping) => {
         const cartRef = collection(db, 'carts', user, 'pending')
         const q = query(cartRef, where('checkedOut', '==', false))
         const snap = await getDocs(q)
         snap.forEach(async(snap) => {
             let paid = ''
-            if (pmtType === '1') {
+            if (payment.pmtType === '1') {
                 paid = true
             }
-            if (pmtType === '2') {
+            if (payment.pmtType === '2') {
                 paid = false
             }
+            let subtotal = snap.data().products.map(p => p.qty * p.price).reduce((a, b) => a + b)
             let data = {
                 user: user,
                 products: [...snap.data().products],
+                subtotal: subtotal,
+                shipping: 50,
+                tax: subtotal * 0.2,
+                total: subtotal + 50,
                 paid: paid,
-                pmtType: pmtType,
+                payment: payment,
                 billing: billing,
                 shipping: shipping,
                 checkedOut: true,
@@ -160,6 +180,7 @@ const AppProvider = ({children}) => {
             onAuthStateChanged(auth, (user) => {
                 if (user) {
                     setUser(user.uid)
+                    fetchCart(user.uid)
                 } else {
                     console.log('No user')
                 } 
