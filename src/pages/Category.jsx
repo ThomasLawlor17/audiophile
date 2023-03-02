@@ -1,9 +1,9 @@
 import React, { useContext, useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { AppContext } from "../App.provider";
+import About from "../components/About";
 import Categories from "../components/Categories";
 import Footer from "../components/Footer";
-import Info from "../components/Info";
 import Nav from "../components/Nav";
 
 const CategoryPage = () => {
@@ -45,7 +45,7 @@ const CategoryPage = () => {
         )): ''}
       </div>
       <Categories/>
-      <Info/>
+      <About/>
 		</div>
     <Footer/>
     </>

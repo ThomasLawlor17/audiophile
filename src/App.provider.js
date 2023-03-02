@@ -7,6 +7,7 @@ import { useLocation } from "react-router";
 
 
 export const AppContext = createContext({
+    width: '',
     user: '',
     setUser: () => {},
     cart: {},
@@ -25,11 +26,25 @@ export const AppContext = createContext({
 
 
 const AppProvider = ({children}) => {
+    const [width, setWidth] = useState(getWindowWidth())
     const [user, setUser] = useState()
     const [cart, setCart] = useState({})
     const [categories, setCategories] = useState([])
     const [products, setProducts] = useState([])
     const [checkedOut, setCheckedOut] = useState(false)
+
+    function getWindowWidth() {
+        const width = window.innerWidth
+        return width
+    }
+
+    useEffect(() => {
+        function handleResize() {
+            setWidth(getWindowWidth())
+        }
+        window.addEventListener("resize", handleResize)
+        return () => window.removeEventListener("resize", handleResize)
+    }, [setWidth])
 
     const fetchProducts = async () => {
         let arr = []
@@ -196,6 +211,7 @@ const AppProvider = ({children}) => {
     return (
         <AppContext.Provider
             value={{
+                width,
                 user,
                 setUser,
                 cart,
