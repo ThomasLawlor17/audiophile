@@ -319,7 +319,7 @@ function App() {
       <Categories/>
       <StyledProductsSection product2Image={process.env.PUBLIC_URL + `/assets/images/home/${width >= 770 ? 'desktop' : width < 770 && width > 414 ? 'tablet' : 'mobile'}/image-speaker-zx7.jpg`}>
         <div className="product1">
-          <svg viewBox="0 0 944 944" className={linkHovering ? 'scale' : ''}><g stroke="#FFF" fill="none" fill-rule="evenodd" opacity=".202"><circle cx="472" cy="472" r="235.5"></circle><circle cx="472" cy="472" r="270.5"></circle><circle cx="472" cy="472" r="471.5"></circle></g></svg>
+          <svg viewBox="0 0 944 944" className={linkHovering ? 'scale' : ''}><g stroke="#FFF" fill="none" fillRule="evenodd" opacity=".202"><circle cx="472" cy="472" r="235.5"></circle><circle cx="472" cy="472" r="270.5"></circle><circle cx="472" cy="472" r="471.5"></circle></g></svg>
           <img src={process.env.PUBLIC_URL + `/assets/images/home/${width > 770 ? 'desktop' : width < 770 && width > 414 ? 'tablet' : 'mobile'}/image-speaker-zx9.png`} alt="" />
           <div className="text">
             <h1>ZX9<br/>SPEAKER</h1>

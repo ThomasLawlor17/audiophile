@@ -2,7 +2,6 @@ import { createContext, useEffect, useState } from "react";
 import { getAuth, signInAnonymously, onAuthStateChanged} from 'firebase/auth'
 import { db, getCategories, getProducts, getCart } from "./firebase/firebase";
 import {doc, setDoc, addDoc, deleteDoc, getDocs, collection, query, where} from 'firebase/firestore'
-import { useLocation } from "react-router";
 
 
 
@@ -73,8 +72,10 @@ const AppProvider = ({children}) => {
         const productQ = query(productRef, where('id', '==', product))
         const p = await getDocs(productQ)
         let price = ''
+        let slug = ''
         p.forEach(p => {
             price = p.data().price
+            slug = p.data().slug
         })
         const cartRef = collection(db, 'carts', user, 'pending')
         const q = query(cartRef, where('checkedOut', '==', false))
@@ -89,14 +90,14 @@ const AppProvider = ({children}) => {
                     arr[i].qty = q + qty
                     data = {products: arr}
                 } else {
-                    data = {products: [...snap.data().products, {id: product, qty: qty, price: price}]}
+                    data = {products: [...snap.data().products, {id: product, qty: qty, price: price, slug: slug}]}
                 }
                 await setDoc(doc(db, 'carts', user, 'pending', snap.id), data, {merge: true})
             })
         } else {
             data = {
                 user: user,
-                products: [{id: product, qty: qty, price: price}],
+                products: [{id: product, qty: qty, price: price, slug: slug}],
                 subtotal: '',
                 shipping: '',
                 tax: '',

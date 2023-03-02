@@ -11,6 +11,7 @@ const variables = css`
     --light-orange: #FBAF85;
 
     --nav-height: 97px;
+    --nav-height-tablet: 90px;
 
 
     --transition: all 0.25s cubic-bezier(0.645, 0.045, 0.355, 1);

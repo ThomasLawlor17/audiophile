@@ -103,7 +103,7 @@ a {
 `
 
 const Categories = () => {
-    const {size, categories} = useContext(AppContext)
+    const {categories} = useContext(AppContext)
 
 
 	return (
