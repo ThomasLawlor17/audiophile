@@ -382,9 +382,9 @@ const ProductPage = () => {
 				</div>
 				</div>
 				<div className="gallery">
-					<img className="first-img" src={process.env.PUBLIC_URL + activeProduct.gallery.first[`${width >= 770 ? 'desktop' : width < 770 && width > 414 ? 'tablet' : 'mobile'}`]} alt={`${activeProduct.name} gallery image 1`} />
-					<img className="second-img" src={process.env.PUBLIC_URL + activeProduct.gallery.second[`${width >= 770 ? 'desktop' : width < 770 && width > 414 ? 'tablet' : 'mobile'}`]} alt={`${activeProduct.name} gallery image 2`} />
-					<img className="third-img" src={process.env.PUBLIC_URL + activeProduct.gallery.third[`${width >= 770 ? 'desktop' : width < 770 && width > 414 ? 'tablet' : 'mobile'}`]} alt={`${activeProduct.name} gallery image 3`} />
+					<img className="first-img" src={process.env.PUBLIC_URL + activeProduct.gallery.first[`${width >= 770 ? 'desktop' : width < 770 && width > 414 ? 'tablet' : 'mobile'}`]} alt={`${activeProduct.name} gallery 1`} />
+					<img className="second-img" src={process.env.PUBLIC_URL + activeProduct.gallery.second[`${width >= 770 ? 'desktop' : width < 770 && width > 414 ? 'tablet' : 'mobile'}`]} alt={`${activeProduct.name} gallery 2`} />
+					<img className="third-img" src={process.env.PUBLIC_URL + activeProduct.gallery.third[`${width >= 770 ? 'desktop' : width < 770 && width > 414 ? 'tablet' : 'mobile'}`]} alt={`${activeProduct.name} gallery 3`} />
 				</div>
 				<div className="others">
 					<h3>YOU MAY ALSO LIKE</h3>
