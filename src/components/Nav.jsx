@@ -1,6 +1,6 @@
 // React and React Router
 import React, { useContext, useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 
 // npm packages
 import styled, {css} from 'styled-components'
@@ -24,6 +24,7 @@ height: var(--nav-height);
 pointer-events: auto !important;
 user-select: auto !important;
 transition: var(--transition);
+${props => props.location === '/' ? '' : css`background-color: var(--black);`}
 
 @media (max-width: 769px) {
     height: var(--nav-height-tablet);       
@@ -33,9 +34,9 @@ transition: var(--transition);
     ${props => props.scrollDirection === 'up' && !props.scrolledToTop && css`
     height: var(--nav-height);
     transform: translateY(0px);
-    background-color: #191919;
+    ${props => props.location === '/' ? css`background-color: #191919;` : css`background-color: var(--black);`}
     @media (max-width: 769px) {
-     height: var(--nav-height-tablet);  
+    height: var(--nav-height-tablet);  
     }
     `};
     ${props => props.scrollDirection === 'down' && !props.scrolledToTop && css`
@@ -89,6 +90,7 @@ svg {
 
 @media (max-width: 769px) {
     align-items: center;
+    width: 89.58333333%;
     .tablet {
         ${({theme}) => theme.mixins.flexCenter};
         gap: 42px;
@@ -97,6 +99,7 @@ svg {
         display: block;
         width: 16px;
         height: 15px;
+        cursor: pointer;
     }
     .links {
         display: none;
@@ -107,7 +110,7 @@ svg {
 
 `
 const StyledMenu = styled.div`
-position: absolute;
+position: fixed;
 z-index: 10;
 width: 100%;
 top: 97px;
@@ -129,11 +132,11 @@ position: absolute;
 z-index: 5;
 width: 100%;
 height: 10000px;
-top: 97px;
+top: 0;
 backdrop-filter: brightness(0.4);
 `
 const StyledCart = styled.div`
-position: absolute;
+position: fixed;
 top: calc(var(--nav-height) + 32px);
 right: 11.45%;
 backdrop-filter: brightness(1);
@@ -211,6 +214,7 @@ div {
             }
             .reduce, .add {
                 opacity: 25%;
+                cursor: pointer;
 
                 &:hover {
                     opacity: 1;
@@ -259,14 +263,14 @@ div {
 }
 `
 
-const Nav = ({itemAdded, setItemAdded}) => {
-    const {width, categories, cart} = useContext(AppContext)
+const Nav = () => {
+    const {width, user, cart, addToCart, removeFromCart, cartOpen, setCartOpen, categories, checkedOut, getItemCategory} = useContext(AppContext)
     const scrollDirection = useScrollDirection('down')
     const [scrolledToTop, setScrolledToTop] = useState(true)
     const prefersReducedMotion = usePrefersReducedMotion()
+    const location = useLocation()
 
     const [active, setActive] = useState(false)
-    const [cartOpen, setCartOpen] = useState(false)
 
     const handleScroll = () => {
         setScrolledToTop(window.pageYOffset < 50)
@@ -281,19 +285,10 @@ const Nav = ({itemAdded, setItemAdded}) => {
             window.removeEventListener('scroll', handleScroll)
         }
     }, [prefersReducedMotion])
-    useEffect(() => {
-        if (itemAdded) {
-            setCartOpen(true)
-            setTimeout(() => {
-                setItemAdded(false)
-                setCartOpen(false)
-            }, 3000)
-        }
-    },[itemAdded, setItemAdded])
 
   return (
     <>
-    <StyledHeader scrollDirection={scrollDirection} scrolledToTop={scrolledToTop}>
+    <StyledHeader scrollDirection={scrollDirection} scrolledToTop={scrolledToTop} location={location.pathname}>
     <StyledNav>
         {width < 770 && width > 414 ? 
         <div className="tablet">
@@ -324,23 +319,23 @@ const Nav = ({itemAdded, setItemAdded}) => {
     <Backdrop></Backdrop>
     <StyledCart>
         <div className="top">
-            <h6>CART ({cart ? cart.length : '0'})</h6>
-            <p>Remove all</p>
+            <h6>CART ({cart && cart.length && !checkedOut ? cart.length : '0'})</h6>
+            <p onClick={!checkedOut ? () => removeFromCart(user, null, 'all') : null}>Remove all</p>
         </div>
         <div className="contents">
-            {cart && cart.length ? cart.map((item, i) => (
+            {cart && cart.length && !checkedOut ? cart.map((item, i) => (
                 <div key={i} className="cart-item">
-                    <div className="cart-item-img">
+                    <Link to={`/${getItemCategory(item.slug)}/${item.slug}`} className="cart-item-img">
                         <img src={process.env.PUBLIC_URL + `/assets/images/cart/image-${item.slug}.jpg`} alt={item.slug.replace(/-/g, ' ')} />
-                    </div>
+                    </Link>
                     <div className="cart-item-info">
-                        <span className='cart-item-name'>{item.slug.replace(/-/g, ' ').replace('one', 'I').replace('two', 'II').replace(/mark/g, 'mk').replace(/headphones/g, '').replace(/speakers/g, '').replace(/earphones/g, '')}</span>
+                        <span className='cart-item-name'>{item.slug.replace(/-/g, ' ').replace(/headphones/g, '').replace(/speakers/g, '').replace(/earphones/g, '').replace('one', 'I').replace('two', 'II').replace(/mark/g, 'mk')}</span>
                         <span className='cart-item-price'>${item.price.toLocaleString('en-US')}</span>
                     </div>
                     <div className="cart-item-qty">
-                        <span className="reduce">-</span>
+                        <span className="reduce" onClick={() => removeFromCart(user, item.id, 1)}>-</span>
                         <span className="qty">{item.qty}</span>
-                        <span className="add">+</span>
+                        <span className="add" onClick={() => addToCart(user, item.id, 1)}>+</span>
                     </div>
                 </div>
             )): <div className='empty'>YOUR CART IS EMPTY</div>}
@@ -348,7 +343,7 @@ const Nav = ({itemAdded, setItemAdded}) => {
                 <p>TOTAL</p>
                 <span>${cart && cart.length ? cart.map(item => item.qty * item.price).reduce((a, b) => a + b).toLocaleString('en-US') : '0'}</span>
             </div>
-                <Link to='/checkout' className='checkout'>CHECKOUT</Link>
+                <Link to='/checkout' className='checkout' onClick={() => setCartOpen(false)}>CHECKOUT</Link>
         </div>
     </StyledCart>
     </>

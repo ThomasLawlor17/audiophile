@@ -25,6 +25,7 @@ html {
   }
   ::-webkit-scrollbar {
     width: 12px;
+    display: none;
   }
   ::-webkit-scrollbar-track {
     background: transparent;

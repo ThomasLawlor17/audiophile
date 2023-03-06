@@ -29,6 +29,19 @@ background-color: #191919;
   background: url(${({background}) => background}) center/cover no-repeat;
 }
 
+&::after {
+  content: '';
+  position: absolute;
+  width: 77.0883333333%;
+  height: 1px;
+  background-color: var(--white);
+  opacity: 20%;
+  margin: auto;
+  top: var(--nav-height);
+  left: 0;
+  right: 0;
+}
+
 div.text {
   position: relative;
   left: 11.5%;
@@ -66,6 +79,9 @@ div.text {
     max-height: 729px;
     opacity: 50.21%;
   }
+  &::after {
+    width: 89.5833333333%;
+  }
 
   div.text {
     left: auto;
@@ -85,6 +101,9 @@ div.text {
   
   &::before {
     max-height: 600px;
+  }
+  &::after {
+    width: 100%;
   }
 
   div.text {
@@ -313,7 +332,7 @@ function App() {
           <span className="overline">NEW PRODUCT</span>
           <h1>XX99 Mark II Headphones</h1>
           <p>Experience natural, lifelike audio and exceptional build quality made for the passionate music enthusiast.</p>
-          <Link to='/headphones/4'>SEE PRODUCT</Link>
+          <Link to='/headphones/xx99-mark-two-headphones'>SEE PRODUCT</Link>
         </div>
       </StyledHeroSection>
       <Categories/>
@@ -324,18 +343,18 @@ function App() {
           <div className="text">
             <h1>ZX9<br/>SPEAKER</h1>
             <p>Upgrade to premium speakers that are phenomenally built to deliver truly remarkable sound.</p>
-            <Link to='/speakers/6' onMouseEnter={() => setLinkHovering(true)} onMouseLeave={() => setLinkHovering(false)}>SEE PRODUCT</Link>
+            <Link to='/speakers/zx9-speaker' onMouseEnter={() => setLinkHovering(true)} onMouseLeave={() => setLinkHovering(false)}>SEE PRODUCT</Link>
           </div>
         </div>
         <div className="product2">
           <h4>ZX7 SPEAKER</h4>
-          <Link to='/speakers/5'>SEE PRODUCT</Link>
+          <Link to='/speakers/zx7-speaker'>SEE PRODUCT</Link>
         </div>
         <div className="product3">
           <img src={process.env.PUBLIC_URL + `/assets/images/home/${width > 770 ? 'desktop' : width < 770 && width > 414 ? 'tablet' : 'mobile'}/image-earphones-yx1.jpg`} alt="" />
           <div className="title">
             <h4>YX1 EARPHONES</h4>
-            <Link to='/earphones/1'>SEE PRODUCT</Link>
+            <Link to='/earphones/yx1-earphones'>SEE PRODUCT</Link>
           </div>
         </div>
       </StyledProductsSection>

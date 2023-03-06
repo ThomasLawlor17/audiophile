@@ -15,12 +15,20 @@ export const AppContext = createContext({
     addToCart: () => {},
     removeFromCart: () => {},
     checkoutCart: () => {},
+    cartOpen: '',
+    setCartOpen: () => {},
+    itemAdded: '',
+    setItemAdded: () => {},
     categories: [],
     setCategories: () => {},
     products: [],
     setProducts: () => {},
     checkedOut: '',
     setCheckedOut: () => {},
+    checkoutSummary: '',
+    setCheckoutSummary: () => {},
+    splitProductName: () => {},
+    getItemCategory: () => {},
 })
 
 
@@ -28,9 +36,11 @@ const AppProvider = ({children}) => {
     const [width, setWidth] = useState(getWindowWidth())
     const [user, setUser] = useState()
     const [cart, setCart] = useState({})
+    const [cartOpen, setCartOpen] = useState(false)
     const [categories, setCategories] = useState([])
     const [products, setProducts] = useState([])
     const [checkedOut, setCheckedOut] = useState(false)
+    const [checkoutSummary, setCheckoutSummary] = useState([])
 
     function getWindowWidth() {
         const width = window.innerWidth
@@ -145,8 +155,7 @@ const AppProvider = ({children}) => {
                 }
                 data = {products: arr}
             } if (qty === 'all') {
-                let i = snap.data().products.findIndex(p => p.id === product)
-                arr.splice(i, 1)
+                let arr = []
                 data = {products: arr}
             }
             await setDoc(doc(db, 'carts', user, 'pending', snap.id), data, {merge: true})
@@ -186,9 +195,22 @@ const AppProvider = ({children}) => {
             await setDoc(doc(db, 'carts', user, 'complete', snap.id), data)
             await deleteDoc(doc(db, 'carts', user, 'pending', snap.id))
             setCheckedOut(true)
+            setCheckoutSummary([...cart])
             setCart([])
         })
     }
+
+    const splitProductName = (name, category) => {
+        let arr = name.split(category === 'speakers' ? 'Speaker' : category.charAt(0).toUpperCase() + category.slice(1))
+        return (
+          <h2>{arr[0]}<br/>{category === 'speakers' ? 'speaker' : category}</h2>
+        )
+    }
+    const getItemCategory = (slug) => {
+        let product = products.find(product => product.slug === slug)
+        return product.category
+    }
+
 
     useEffect(() => {
         const auth = getAuth()
@@ -221,12 +243,18 @@ const AppProvider = ({children}) => {
                 addToCart,
                 removeFromCart,
                 checkoutCart,
+                cartOpen,
+                setCartOpen,
                 categories,
                 setCategories,
                 products,
                 setProducts,
                 checkedOut,
                 setCheckedOut,
+                checkoutSummary,
+                setCheckoutSummary,
+                splitProductName,
+                getItemCategory,
             }}>
                 {children}
             </AppContext.Provider>
