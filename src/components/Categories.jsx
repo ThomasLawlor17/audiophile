@@ -110,7 +110,7 @@ const Categories = () => {
 		<StyledSection>
 			{categories.map((c, i) => (
 				<Link key={i} to={`/${c}`}>
-					<img src={process.env.PUBLIC_URL + `/assets/images/shared/desktop/image-category-thumbnail-${c}.png`} alt={c + ' icon'} />
+					<img src={process.env.PUBLIC_URL + `/assets/images/shared/desktop/image-category-thumbnail-${c}.png`} alt={c} />
 					<h6>{c}</h6>
 					<div>
 						<span>SHOP</span><Icon name='arrow'/>

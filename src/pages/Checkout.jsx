@@ -78,6 +78,41 @@ flex-direction: column;
 gap: 41px;
 width: 65.76576577%;
 
+.error:not(.emoney-input, .cash-input) {
+	color: #CD2C2C;
+	input {
+		border: solid 2px #CD2C2C;
+		animation: shake 0.7s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+	}
+}
+.error.emoney-input, .error.cash-input {
+	border: solid 2px #CD2C2C;
+	animation: shake 0.7s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+@keyframes shake {
+    10%,
+    90% {
+      transform: translate3d(-1px, 0, 0);
+      background: var(--Red);
+    }
+  
+    20%,
+    80% {
+      transform: translate3d(2px, 0, 0);
+    }
+  
+    30%,
+    50%,
+    70% {
+      transform: translate3d(-4px, 0, 0);
+    }
+  
+    40%,
+    60% {
+      transform: translate3d(4px, 0, 0);
+    }
+  }
 
 ul {
 	list-style: none;
@@ -101,6 +136,8 @@ ul {
 			font-weight: 700;
 			line-height: 16px;
 			letter-spacing: -0.214286px;
+			display: flex;
+			justify-content: space-between;
 		}
 
 		input {
@@ -538,7 +575,7 @@ const CheckoutPage = () => {
 
 	const [name, setName] = useState('')
 	const [email, setEmail] = useState('')
-	const [phone, setPhone] = useState()
+	const [phone, setPhone] = useState('')
 	const [address, setAddress] = useState('')
 	const [code, setCode] = useState('')
 	const [city, setCity] = useState('')
@@ -550,25 +587,117 @@ const CheckoutPage = () => {
 	const [errEmpty, setErrEmpty] = useState([])
 	const [expandSummary, setExpandSummary] = useState(false)
 
+	const errorName = () => {
+		if (!name) {
+			setErrEmpty(err => [...err, 'name'])
+			return true
+		}
+	}
+	const errorEmail = () => {
+		if (!email) {
+			setErrEmpty(err => [...err, 'email'])
+			return true
+		}
+		if (!/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email)) {
+			setErrFormat(err => [...err, 'email'])
+			return true
+		}
+	}
+	const errorPhone = () => {
+		if (!phone) {
+			setErrEmpty(err => [...err, 'phone'])
+			return true
+		}
+		if (!/^[0-9]*$/.test(phone) && phone.length > 10) {
+			setErrFormat(err => [...err, 'phone'])
+			return true
+		}
+	}
+	const errorAddress = () => {
+		if (!address) {
+			setErrEmpty(err => [...err, 'address'])
+			return true
+		}
+	}
+	const errorCode = () => {
+		if (!code) {
+			setErrEmpty(err => [...err, 'code'])
+			return true
+		}
+		if (!/^[ABCEGHJKLMNPRSTVXY]\d[ABCEGHJKLMNPRSTVWXYZ]( )?\d[ABCEGHJKLMNPRSTVWXYZ]\d$/i.test(code) || !/(^\d{5}$)|(^\d{5}-\d{4}$)/.test(code)) {
+			setErrFormat(err => [...err, 'code'])
+			return true
+		}
+	}
+	const errorCity = () => {
+		if (!city) {
+			setErrEmpty(err => [...err, 'city'])
+			return true
+		}
+	}
+	const errorCountry = () => {
+		if (!country) {
+			setErrEmpty(err => [...err, 'country'])
+			return true
+		}
+		if (country.toLowerCase() !== 'canada' || country.toLowerCase() !== 'united states') {
+			setErrFormat(err => [...err, 'country'])
+		}
+	}
+	const errorPmtType = () => {
+		if (pmtType === 0) {
+			setErrEmpty(err => [...err, 'pmtType'])
+			return true
+		}
+		if (pmtType === '1') {
+			let err = false
+			if (!emNo) {
+				setErrEmpty(err => [...err, 'emNo'])
+				err = true
+			}
+			if (!emPin) {
+				setErrEmpty(err => [...err, 'emPin'])
+				err = true
+			}
+			return err
+		}
+	}
+
 	const handleCheckout = e => {
 		e.preventDefault()
-		const billing = {
-			name: name,
-			email: email,
-			phone: phone,
+		setErrEmpty([])
+		setErrFormat([])
+		const errors = [
+			errorName(),
+			errorEmail(),
+			errorPhone(),
+			errorAddress(),
+			errorCode(),
+			errorCity(),
+			errorCountry(),
+			errorPmtType(),
+		]
+		if (errors.includes(true)) {
+			return
+		} else {
+			const billing = {
+				name: name,
+				email: email,
+				phone: phone,
+			}
+			const shipping = {
+				address: address,
+				code: code,
+				city: city,
+				country: country
+			}
+			const payment = {
+				pmtType: pmtType,
+				emNo: pmtType === 1 ? emNo : '',
+				emPin: pmtType === 1 ? emPin : '',
+			}
+			checkoutCart(user, payment, billing, shipping)
 		}
-		const shipping = {
-			address: address,
-			code: code,
-			city: city,
-			country: country
-		}
-		const payment = {
-			pmtType: pmtType,
-			emNo: pmtType === 1 ? emNo : '',
-			emPin: pmtType === 1 ? emPin : '',
-		}
-		checkoutCart(user, payment, billing, shipping)
 	}
 
 	return (
@@ -586,35 +715,35 @@ const CheckoutPage = () => {
 					<form onSubmit={(e) => handleCheckout(e)}>
 						<subtitle>BILLING DETAILS</subtitle>
 						<ul className="billing">
-							<li className={errEmpty.includes('name') || errFormat.includes('name') ? 'error' : ''}>
-								<label htmlFor="">Name{errEmpty.includes('name') ? <span>Can't be empty</span> : errFormat.includes('name') ? <span>Wrong format</span> : ''}</label>
+							<li className={(errEmpty.includes('name') || errFormat.includes('name')) && !name ? 'error' : ''}>
+								<label htmlFor="">Name{errEmpty.includes('name') && !name ? <span>Can't be empty</span> : errFormat.includes('name') ? <span>Wrong format</span> : ''}</label>
 								<input type="text" value={name} onChange={(e) => setName(e.target.value)} />
 							</li>
-							<li className={errEmpty.includes('email') || errFormat.includes('email') ? 'error' : ''}>
-								<label htmlFor="">Email Address{errEmpty.includes('email') ? <span>Can't be empty</span> : errFormat.includes('email') ? <span>Wrong format</span> : ''}</label>
+							<li className={(errEmpty.includes('email') || errFormat.includes('email')) && (!email || !/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email))  ? 'error' : ''}>
+								<label htmlFor="">Email Address{errEmpty.includes('email') && !email ? <span>Can't be empty</span> : errFormat.includes('email') && !/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email) ? <span>Wrong format</span> : ''}</label>
 								<input type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
 							</li>
-							<li className={errEmpty.includes('phone') || errFormat.includes('phone') ? 'error' : ''}>
-								<label htmlFor="">Phone Number{errEmpty.includes('phone') ? <span>Can't be empty</span> : errFormat.includes('phone') ? <span>Wrong format</span> : ''}</label>
+							<li className={(errEmpty.includes('phone') || errFormat.includes('phone')) && (!phone || !/^[0-9]*$/.test(phone) || phone.length > 10) ? 'error' : ''}>
+								<label htmlFor="">Phone Number{errEmpty.includes('phone') && !phone ? <span>Can't be empty</span> : errFormat.includes('phone') && (!/^[0-9]*$/.test(phone) || phone.length > 10) ? <span>Wrong format</span> : ''}</label>
 								<input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} />
 							</li>
 						</ul>
 						<subtitle>SHIPPING INFO</subtitle>
 						<ul className="shipping">
-							<li className={errEmpty.includes('address') || errFormat.includes('address') ? 'error full' : 'full'}>
-								<label htmlFor="">Address{errEmpty.includes('address') ? <span>Can't be empty</span> : errFormat.includes('address') ? <span>Wrong format</span> : ''}</label>
+							<li className={(errEmpty.includes('address') || errFormat.includes('address')) && !address ? 'error full' : 'full'}>
+								<label htmlFor="">Address{errEmpty.includes('address') && !address ? <span>Can't be empty</span> : errFormat.includes('address') ? <span>Wrong format</span> : ''}</label>
 								<input type="text" value={address} onChange={(e) => setAddress(e.target.value)} />
 							</li>
-							<li className={errEmpty.includes('code') || errFormat.includes('code') ? 'error' : ''}>
-								<label htmlFor="">ZIP Code{errEmpty.includes('code') ? <span>Can't be empty</span> : errFormat.includes('code') ? <span>Wrong format</span> : ''}</label>
+							<li className={(errEmpty.includes('code') || errFormat.includes('code')) && (!code || !/^[ABCEGHJKLMNPRSTVXY]\d[ABCEGHJKLMNPRSTVWXYZ]( )?\d[ABCEGHJKLMNPRSTVWXYZ]\d$/i.test(code) || !/(^\d{5}$)|(^\d{5}-\d{4}$)/.test(code)) ? 'error' : ''}>
+								<label htmlFor="">{(country !== 'United States' || country !== 'united states') && country !== '' ? 'Postal' :'ZIP'} Code{errEmpty.includes('code') && !code ? <span>Can't be empty</span> : errFormat.includes('code') && (!/^[ABCEGHJKLMNPRSTVXY]\d[ABCEGHJKLMNPRSTVWXYZ]( )?\d[ABCEGHJKLMNPRSTVWXYZ]\d$/i.test(code) || !/(^\d{5}$)|(^\d{5}-\d{4}$)/.test(code)) ? <span>Wrong format</span> : ''}</label>
 								<input type="text" value={code} onChange={(e) => setCode(e.target.value)} />
 							</li>
-							<li className={errEmpty.includes('city') || errFormat.includes('city') ? 'error' : ''}>
-								<label htmlFor="">City{errEmpty.includes('city') ? <span>Can't be empty</span> : errFormat.includes('city') ? <span>Wrong format</span> : ''}</label>
+							<li className={(errEmpty.includes('city') || errFormat.includes('city')) && !city ? 'error' : ''}>
+								<label htmlFor="">City{errEmpty.includes('city') && !city ? <span>Can't be empty</span> : errFormat.includes('city') ? <span>Wrong format</span> : ''}</label>
 								<input type="text" value={city} onChange={(e) => setCity(e.target.value)} />
 							</li>
-							<li className={errEmpty.includes('country') || errFormat.includes('country') ? 'error' : ''}>
-								<label htmlFor="">Country{errEmpty.includes('country') ? <span>Can't be empty</span> : errFormat.includes('country') ? <span>Wrong format</span> : ''}</label>
+							<li className={(errEmpty.includes('country') || errFormat.includes('country')) && (!country || country.toLowerCase() !== 'canada' || country.toLowerCase() !== 'united states') ? 'error' : ''}>
+								<label htmlFor="">Country{errEmpty.includes('country') && !country ? <span>Can't be empty</span> : errFormat.includes('country') && (country.toLowerCase() !== 'canada' || country.toLowerCase() !== 'united states') ? <span>We only ship to Canada or the US</span> : ''}</label>
 								<input type="text" value={country} onChange={(e) => setCountry(e.target.value)} />
 							</li>
 						</ul>
@@ -623,20 +752,20 @@ const CheckoutPage = () => {
 							<span className="pmt-label">Payment Method</span>
 							<div className="pmt-radio">
 								<input type="radio" name="pmtType" id="emoney-input"  value={1} onChange={e => setPmtType(e.target.value)}/>
-								<label className="emoney-input" htmlFor="emoney-input">e-Money</label>
+								<label className={`${errEmpty.includes('pmtType') && pmtType === 0 ? 'error' : ''} emoney-input`} htmlFor="emoney-input">e-Money</label>
 								<input type="radio" name="pmtType" id="cash-input" value={2} onChange={e => setPmtType(e.target.value)}/>
-								<label className="cash-input" htmlFor="cash-input">Cash on Delivery</label>
+								<label className={`${errEmpty.includes('pmtType') && pmtType === 0 ? 'error' : ''} cash-input`} htmlFor="cash-input">Cash on Delivery</label>
 							</div>
 						</div>
 						<div className="payment">
 							{pmtType === '1' ?
 								<ul>
-									<li className={errEmpty.includes('emNo') || errFormat.includes('emNo') ? 'error' : ''}>
-										<label htmlFor="">e-Money Number{errEmpty.includes('emNo') ? <span>Can't be empty</span> : errFormat.includes('emNo') ? <span>Wrong format</span> : ''}</label>
+									<li className={(errEmpty.includes('emNo') || errFormat.includes('emNo')) && !emNo ? 'error' : ''}>
+										<label htmlFor="">e-Money Number{errEmpty.includes('emNo') && !emNo ? <span>Can't be empty</span> : errFormat.includes('emNo') ? <span>Wrong format</span> : ''}</label>
 										<input type="text" value={emNo} onChange={(e) => setEmNo(e.target.value)}/>
 									</li>
-									<li className={errEmpty.includes('emPin') || errFormat.includes('emPin') ? 'error' : ''}>
-										<label htmlFor="">e-Money PIN{errEmpty.includes('emPin') ? <span>Can't be empty</span> : errFormat.includes('emPin') ? <span>Wrong format</span> : ''}</label>
+									<li className={(errEmpty.includes('emPin') || errFormat.includes('emPin')) && !emPin ? 'error' : ''}>
+										<label htmlFor="">e-Money PIN{errEmpty.includes('emPin') && !emPin ? <span>Can't be empty</span> : errFormat.includes('emPin') ? <span>Wrong format</span> : ''}</label>
 										<input type="text" value={emPin} onChange={(e) => setEmPin(e.target.value)}/>
 									</li>
 								</ul>
