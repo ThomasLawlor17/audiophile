@@ -2,11 +2,11 @@ import { createContext, useEffect, useState } from "react";
 import { getAuth, signInAnonymously, onAuthStateChanged} from 'firebase/auth'
 import { db, getCategories, getProducts, getCart } from "./firebase/firebase";
 import {doc, setDoc, addDoc, deleteDoc, getDocs, collection, query, where} from 'firebase/firestore'
-import { useLocation } from "react-router";
 
 
 
 export const AppContext = createContext({
+    width: '',
     user: '',
     setUser: () => {},
     cart: {},
@@ -15,21 +15,45 @@ export const AppContext = createContext({
     addToCart: () => {},
     removeFromCart: () => {},
     checkoutCart: () => {},
+    cartOpen: '',
+    setCartOpen: () => {},
+    itemAdded: '',
+    setItemAdded: () => {},
     categories: [],
     setCategories: () => {},
     products: [],
     setProducts: () => {},
     checkedOut: '',
     setCheckedOut: () => {},
+    checkoutSummary: '',
+    setCheckoutSummary: () => {},
+    splitProductName: () => {},
+    getItemCategory: () => {},
 })
 
 
 const AppProvider = ({children}) => {
+    const [width, setWidth] = useState(getWindowWidth())
     const [user, setUser] = useState()
     const [cart, setCart] = useState({})
+    const [cartOpen, setCartOpen] = useState(false)
     const [categories, setCategories] = useState([])
     const [products, setProducts] = useState([])
     const [checkedOut, setCheckedOut] = useState(false)
+    const [checkoutSummary, setCheckoutSummary] = useState([])
+
+    function getWindowWidth() {
+        const width = window.innerWidth
+        return width
+    }
+
+    useEffect(() => {
+        function handleResize() {
+            setWidth(getWindowWidth())
+        }
+        window.addEventListener("resize", handleResize)
+        return () => window.removeEventListener("resize", handleResize)
+    }, [setWidth])
 
     const fetchProducts = async () => {
         let arr = []
@@ -58,8 +82,10 @@ const AppProvider = ({children}) => {
         const productQ = query(productRef, where('id', '==', product))
         const p = await getDocs(productQ)
         let price = ''
+        let slug = ''
         p.forEach(p => {
             price = p.data().price
+            slug = p.data().slug
         })
         const cartRef = collection(db, 'carts', user, 'pending')
         const q = query(cartRef, where('checkedOut', '==', false))
@@ -74,14 +100,14 @@ const AppProvider = ({children}) => {
                     arr[i].qty = q + qty
                     data = {products: arr}
                 } else {
-                    data = {products: [...snap.data().products, {id: product, qty: qty, price: price}]}
+                    data = {products: [...snap.data().products, {id: product, qty: qty, price: price, slug: slug}]}
                 }
                 await setDoc(doc(db, 'carts', user, 'pending', snap.id), data, {merge: true})
             })
         } else {
             data = {
                 user: user,
-                products: [{id: product, qty: qty, price: price}],
+                products: [{id: product, qty: qty, price: price, slug: slug}],
                 subtotal: '',
                 shipping: '',
                 tax: '',
@@ -129,8 +155,7 @@ const AppProvider = ({children}) => {
                 }
                 data = {products: arr}
             } if (qty === 'all') {
-                let i = snap.data().products.findIndex(p => p.id === product)
-                arr.splice(i, 1)
+                let arr = []
                 data = {products: arr}
             }
             await setDoc(doc(db, 'carts', user, 'pending', snap.id), data, {merge: true})
@@ -170,9 +195,22 @@ const AppProvider = ({children}) => {
             await setDoc(doc(db, 'carts', user, 'complete', snap.id), data)
             await deleteDoc(doc(db, 'carts', user, 'pending', snap.id))
             setCheckedOut(true)
+            setCheckoutSummary([...cart])
             setCart([])
         })
     }
+
+    const splitProductName = (name, category) => {
+        let arr = name.split(category === 'speakers' ? 'Speaker' : category.charAt(0).toUpperCase() + category.slice(1))
+        return (
+          <h2>{arr[0]}<br/>{category === 'speakers' ? 'speaker' : category}</h2>
+        )
+    }
+    const getItemCategory = (slug) => {
+        let product = products.find(product => product.slug === slug)
+        return product.category
+    }
+
 
     useEffect(() => {
         const auth = getAuth()
@@ -196,6 +234,7 @@ const AppProvider = ({children}) => {
     return (
         <AppContext.Provider
             value={{
+                width,
                 user,
                 setUser,
                 cart,
@@ -204,12 +243,18 @@ const AppProvider = ({children}) => {
                 addToCart,
                 removeFromCart,
                 checkoutCart,
+                cartOpen,
+                setCartOpen,
                 categories,
                 setCategories,
                 products,
                 setProducts,
                 checkedOut,
                 setCheckedOut,
+                checkoutSummary,
+                setCheckoutSummary,
+                splitProductName,
+                getItemCategory,
             }}>
                 {children}
             </AppContext.Provider>
