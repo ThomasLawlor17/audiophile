@@ -14,7 +14,7 @@ import Icon from "./icons/Icon";
 
 
 
-const StyledNav = styled.nav`
+const StyledDiv = styled.div`
 ${({theme}) => theme.mixins.flexCenter};
 margin-top: 200px;
 gap: 30px;
@@ -119,7 +119,7 @@ const Categories = () => {
 
 
 	return (
-		<StyledNav id="categories" ref={revealContainer}>
+		<StyledDiv id="categories" ref={revealContainer}>
 			{categories.map((c, i) => (
 				<Link key={i} to={`/${c}`}>
 					<img src={process.env.PUBLIC_URL + `/assets/images/shared/desktop/image-category-thumbnail-${c}.png`} alt={c} />
@@ -129,7 +129,7 @@ const Categories = () => {
 					</div>
 				</Link>
 			))}
-		</StyledNav>
+		</StyledDiv>
 	);
 };
 
