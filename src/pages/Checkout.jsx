@@ -624,7 +624,9 @@ const CheckoutPage = () => {
 			setErrEmpty(err => [...err, 'code'])
 			return true
 		}
-		if (!/^[ABCEGHJKLMNPRSTVXY]\d[ABCEGHJKLMNPRSTVWXYZ]( )?\d[ABCEGHJKLMNPRSTVWXYZ]\d$/i.test(code) || !/(^\d{5}$)|(^\d{5}-\d{4}$)/.test(code)) {
+		if (/^[ABCEGHJKLMNPRSTVXY]\d[ABCEGHJKLMNPRSTVWXYZ]( )?\d[ABCEGHJKLMNPRSTVWXYZ]\d$/i.test(code.toUpperCase()) || /(^\d{5}$)|(^\d{5}-\d{4}$)/.test(code)) {
+			return false
+		} else {
 			setErrFormat(err => [...err, 'code'])
 			return true
 		}
@@ -640,8 +642,11 @@ const CheckoutPage = () => {
 			setErrEmpty(err => [...err, 'country'])
 			return true
 		}
-		if (country.toLowerCase() !== 'canada' || country.toLowerCase() !== 'united states') {
+		if (country.toLowerCase() === 'canada' || country.toLowerCase() === 'united states') {
+			return false
+		} else {
 			setErrFormat(err => [...err, 'country'])
+			return true
 		}
 	}
 	const errorPmtType = () => {
