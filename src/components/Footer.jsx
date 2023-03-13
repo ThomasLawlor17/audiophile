@@ -22,7 +22,7 @@ row-gap: 32px;
     top: 0;
     left: 11.45%;
 }
-#logo {
+.logo {
     width: 143px;
     height: 25px;
     grid-area: 1 / 1 / 2 / 2;
@@ -77,7 +77,7 @@ div.socials {
     &::before {
         left: 5.208%;
     }
-    #logo {
+    .logo {
         grid-area: 1 / 1 / 2 / 3;
     }
     .links {

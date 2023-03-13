@@ -75,7 +75,7 @@ svg {
     width: 23px;
     cursor: pointer;
 }
-#logo, .logo-link {
+.logo, .logo-link {
     height: 25px;
     width: 143px;
 }
