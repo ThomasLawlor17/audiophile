@@ -1,5 +1,5 @@
 // React and React Router
-import React, { useContext } from "react";
+import React, { useContext, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 
 // npm Packages
@@ -7,6 +7,9 @@ import styled from 'styled-components'
 
 // Other files
 import { AppContext } from "../App.provider";
+import { srConfig } from "../config";
+import usePrefersReducedMotion from "../hooks/usePrefersReducedMotion";
+import sr from "../utils/sr";
 import Icon from "./icons/Icon";
 
 
@@ -104,10 +107,19 @@ a {
 
 const Categories = () => {
     const {categories} = useContext(AppContext)
+	const revealContainer = useRef(null)
+	const prefersReducedMotion = usePrefersReducedMotion()
+  
+	useEffect(() => {
+	  if (prefersReducedMotion) {
+		return
+	  }
+	  sr.reveal(revealContainer.current, srConfig())
+	}, [prefersReducedMotion])
 
 
 	return (
-		<StyledSection>
+		<StyledSection id="categories" ref={revealContainer}>
 			{categories.map((c, i) => (
 				<Link key={i} to={`/${c}`}>
 					<img src={process.env.PUBLIC_URL + `/assets/images/shared/desktop/image-category-thumbnail-${c}.png`} alt={c} />

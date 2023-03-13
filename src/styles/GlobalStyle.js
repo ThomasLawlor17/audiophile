@@ -137,6 +137,11 @@ html {
     text-decoration: none;
   }
 
+  @keyframes fade {
+    from {opacity: 0}
+    to {opacity: 1}
+  }
+
 `
 
 export default GlobalStyle

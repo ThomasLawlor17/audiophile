@@ -1,6 +1,9 @@
-import React, { useContext } from 'react'
+import React, { useContext, useRef, useEffect } from 'react'
 import styled from 'styled-components'
 import { AppContext } from '../App.provider'
+import { srConfig } from '../config'
+import usePrefersReducedMotion from '../hooks/usePrefersReducedMotion'
+import sr from '../utils/sr'
 
 const StyledSection = styled.section`
 ${({theme}) => theme.mixins.flexCenter};
@@ -60,8 +63,19 @@ div.text {
 
 const About = () => {
   const {width} = useContext(AppContext)
+  const revealContainer = useRef(null)
+  const prefersReducedMotion = usePrefersReducedMotion()
+
+  useEffect(() => {
+    if (prefersReducedMotion) {
+      return
+    }
+    sr.reveal(revealContainer.current, srConfig())
+  }, [prefersReducedMotion])
+  
+
   return (
-    <StyledSection>
+    <StyledSection id='about' ref={revealContainer}>
       <img src={process.env.PUBLIC_URL + `/assets/images/shared/${width >= 770 ? 'desktop' : width < 770 & width > 414 ? 'tablet' : 'mobile'}/image-best-gear.jpg`} alt="" />
       <div className="text">
         <h2>BRINGING YOU THE <span>BEST</span> AUDIO GEAR</h2>

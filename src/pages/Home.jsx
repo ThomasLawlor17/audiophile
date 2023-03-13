@@ -30,12 +30,6 @@ background-color: #191919;
   top: 0;
   left: 0;
   background: url(${({background}) => background}) center/cover no-repeat;
-  animation: fadein 3s linear;
-}
-
-@keyframes fadein {
-  0%, 20% {opacity: 0}
-  100% {opacity: 1}
 }
 
 &::after {
@@ -64,8 +58,6 @@ div.text {
   max-width: 398px;
   height: 45.052083%;
   max-height: 346px;
-  animation: fadein 3s linear;
-  animation-delay: 1s;
 
   span, h1, p {
     color: var(--white);
@@ -339,7 +331,7 @@ div.product3 {
 
 function App() {
   const {width} = useContext(AppContext)
-  const [animate, setAnimate] = useState(true)
+
   const [linkHovering, setLinkHovering] = useState(false)
   const revealContainer = useRef(null)
   const prefersReducedMotion = usePrefersReducedMotion()
@@ -351,12 +343,6 @@ function App() {
     sr.reveal(revealContainer.current, srConfig())
   }, [prefersReducedMotion])
 
-  useEffect(() => {
-    setTimeout(() => {
-      setAnimate(false)
-    }, 1500)
-  }, [animate])
-
 
   return (
     <ThemeProvider theme={theme}>
@@ -365,7 +351,7 @@ function App() {
     <Nav/>
     <main>
       <StyledHeroSection className="hero" background={process.env.PUBLIC_URL + `/assets/images/home/${width >= 770 ? 'desktop/image-hero.jpg' : width < 770 && width > 414 ? 'tablet/image-header.jpg' : 'mobile/image-header.jpg'}`}>
-        <div className="text" style={{opacity: animate ? '0' : '1'}}>
+        <div className="text">
           <span className="overline">NEW PRODUCT</span>
           <h1>XX99 Mark II Headphones</h1>
           <p>Experience natural, lifelike audio and exceptional build quality made for the passionate music enthusiast.</p>
