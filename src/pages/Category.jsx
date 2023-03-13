@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import styled, {ThemeProvider} from 'styled-components'
 
@@ -10,6 +10,10 @@ import About from "../components/About";
 import Categories from "../components/Categories";
 import Footer from "../components/Footer";
 import Nav from "../components/Nav";
+
+import sr from "../utils/sr";
+import { srConfig } from "../config";
+import usePrefersReducedMotion from "../hooks/usePrefersReducedMotion";
 
 const StyledMain = styled.main`
 section:nth-of-type(3) {
@@ -168,10 +172,18 @@ margin-top: 160px;
 const CategoryPage = () => {
   const {width, products, splitProductName} = useContext(AppContext)
   const location = useLocation()
+  const revealContainer = useRef(null)
+  const prefersReducedMotion = usePrefersReducedMotion()
 
   const [activeCat, setActiveCat] = useState()
   const [activeProducts, setActiveProducts] = useState([])
-
+  
+  useEffect(() => {
+    if (prefersReducedMotion) {
+      return
+    }
+    sr.reveal(revealContainer.current, srConfig())
+  }, [prefersReducedMotion])
 
   useEffect(() => {
     setActiveCat(location.pathname.substring(1))
@@ -192,11 +204,11 @@ const CategoryPage = () => {
     <Nav/>
 		<StyledMain>
       <StyledHeroSection>
-        <h2>{activeCat}</h2>
+        <h2 ref={revealContainer}>{activeCat}</h2>
       </StyledHeroSection>
       <StyledProductsSection>
         {activeProducts ? activeProducts.map((p, i) => (
-          <div key={i} className={`product-item ${p.slug}-item`}>
+          <div key={i} className={`product-item ${p.slug}-item`} ref={revealContainer}>
             <img src={process.env.PUBLIC_URL + p.categoryImage[`${width >= 770 ? 'desktop' : width < 770 && width > 414 ? 'tablet' : 'mobile'}`]} alt={p.name} />
               <div className="product-item-text">
                 {p.new ? <span className="overline">NEW PRODUCT</span> : ''}

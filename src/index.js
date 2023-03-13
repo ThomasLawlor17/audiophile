@@ -7,12 +7,14 @@ import CategoryPage from './pages/Category';
 import ProductPage from './pages/Product';
 import CheckoutPage from './pages/Checkout';
 import AppProvider from './App.provider';
+import ScrollToTop from './utils/ScrollToTop';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <AppProvider>
     <BrowserRouter>
       <React.StrictMode>
+        <ScrollToTop/>
         <Routes>
           <Route path='/' element={<App/>}/>
           <Route path='/checkout' element={<CheckoutPage/>}/>
